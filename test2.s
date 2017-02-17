@@ -1,5 +1,5 @@
 prufa eitt
-Github
+Github sibbi
 function(var a, var b){
   var c = a;
   c = b + a;
