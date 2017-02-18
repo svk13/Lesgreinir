@@ -2,7 +2,7 @@
 import java.lang.Math;
 import java.io.*;
 import java.util.StringTokenizer;
-import is.hi.compilers.NanoLexer;
+//import is.hi.compilers.NanoLexer;
 %}
 
 /* YACC Declarations */
@@ -71,14 +71,19 @@ Double d;
  return tok;
 }
 
-public NanoLexer getLexer( Reader r )
+public NanoLexer getLexer( Reader r ) throws FileNotFoundException
 {
-	NanoLexer nanoMorphoLexer = new NanoLexer(r);
+		return new NanoLexer(r);
 }
 
 void dotest(String args[])
 {
- NanoLexer in = getLexer(new FileReader(args[0]));
+ NanoLexer in = null;;
+try {
+ in = getLexer(new FileReader(args[0]));
+	}catch (Exception e){
+		System.out.println("Villa í getLexer(): "+e);
+	}
  int retCode;
  System.out.println("BYACC/J Calculator Demo");
  System.out.println("Note: Since this example uses the StringTokenizer");
