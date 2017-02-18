@@ -1,7 +1,6 @@
 /**
 	JFlex lexgreiningardæmi  fyrir NanoMorpho.
-	Höfundur: Yngvi Birgir Bergþórsson, febrúar 2017
-		Sigurbjörn Viðar Karlsson, febrúar 2017
+	Höfundur: Yngvi Birgir Bergþórsson, janúar 2017
 
 	Þennan lesgreini má þýða og keyra með skipununum
 		java -jar JFlex-1.6.0.jar nanolexer.jflex
@@ -22,51 +21,35 @@ import java.io.*;
 %byaccj
 
 %{
+
 // Tokens:
 final static int ERROR = -1;
-final static int IF = 1001;
-final static int ELSE = 1002;
-final static int ELSIF = 1003;
-final static int WHILE = 1004;
-final static int VAR = 1005;
-final static int RETURN = 1006;
-final static int NAME = 1007;
-final static int OPNAME = 1008;
-final static int LITERAL = 1009;
-final static int PROGRAM = 1010;
+final static int OPNAME = 1001;
+final static int NAME = 1002;
+final static int LITERAL = 1003;
+final static int PROGRAM = 1004;
+final static int WHILE = 1005;
+final static int IF = 1006;
+final static int ELSE = 1007;
+final static int ELSEIF = 1008;
+final static int RETURN = 1009;
+final static int VAR = 1010;
 
-// Lexer:
-public NanoLexer lexer;
-
-// Parser:
-public NanoMorphoParser yyparser;
 
 // Breyta sem mun innihalda les (lexeme):
 public static String lexeme;
 
-// Constructor
-public NanoLexer( java.io.Reader r, NanoMorphoParser yyparser )
-{
-	this(r);
-	this.yyparser = yyparser;
-}
-
 // Þetta keyrir lexgreininn:
-/*public static void main( String[] args ) throws Exception
+public static void main( String[] args ) throws Exception
 {
-	lexer = new NanoLexer(new FileReader(args[0]));
+	NanoLexer lexer = new NanoLexer(new FileReader(args[0]));
 	int token = lexer.yylex();
 	while( token!=0 )
 	{
 		System.out.println(""+token+": \'"+lexeme+"\'");
 		token = lexer.yylex();
 	}
-}*/
-
-public int getNextToken() {
-	yylex()
 }
-
 
 %}
 
