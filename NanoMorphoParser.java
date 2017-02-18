@@ -1,8 +1,16 @@
 import java.util.Vector;
 import java.util.HashMap;
 
+/**
+	Parser fyrir NanoMorpho.
+	Höfundur: Yngvi Birgir Bergþórsson, febrúar 2017
+		Sigurbjörn Viðar Karlsson, febrúar 2017
+*/
+
 public class NanoMorphoParser
 {
+	private NanoLexer nanoMorphoLexer;
+	
     final static int ERROR = -1;
     final static int IF = 1001;
     final static int ELSE = 1002;
@@ -13,25 +21,31 @@ public class NanoMorphoParser
     final static int NAME = 1007;
     final static int OPNAME = 1008;
     final static int LITERAL = 1009;
+	final static int PROGRAM = 1010;
 
+	public NanoMorphoParser( Reader r )
+	{
+		nanoMorphoLexer = new NanoLexer(r,this);
+	}
+	
     static String advance() throws Exception
     {
-        return NanoMorphoLexer.advance();
+        return nanoMorphoLexer.advance();
     }
     
     static String over( int tok ) throws Exception
     {
-        return NanoMorphoLexer.over(tok);
+        return nanoMorphoLexer.over(tok);
     }
     
     static String over( char tok ) throws Exception
     {
-        return NanoMorphoLexer.over(tok);
+        return nanoMorphoLexer.over(tok);
     }
     
     static int getNextToken()
     {
-        return NanoMorphoLexer.getNextToken();
+        return nanoMorphoLexer.getNextToken();
     }
 
 	private static int varCount;
@@ -40,7 +54,7 @@ public class NanoMorphoParser
 	private static void addVar( String name )
 	{
 		if( varTable.get(name) != null )
-			throw new Error("Variable "+name+" already exists, near line "+NanoMorphoLexer.getNextLine());
+			throw new Error("Variable "+name+" already exists, near line "+nanoMorphoLexer.getNextLine());
 		varTable.put(name,varCount++);
 	}
 
@@ -48,17 +62,20 @@ public class NanoMorphoParser
 	{
 		Integer res = varTable.get(name);
 		if( res == null )
-			throw new Error("Variable "+name+" does not exist, near line "+NanoMorphoLexer.getNextLine());
+			throw new Error("Variable "+name+" does not exist, near line "+nanoMorphoLexer.getNextLine());
 		return res;
 	}
     
     static public void main( String[] args ) throws Exception
     {
-        Object[] code = null;
+        //Óþarfi þar til þulusmiður kemur til sögunnar
+		//Object[] code = null;
+		nanoMorphoLexer = new NanoLexer();
+		NanoLispParser yyparser = new NanoLispParser(new FileReader(args[0]));
         try
         {
-            NanoMorphoLexer.startLexer(args[0]);
-            code = program();
+            nanoMorphoLexer.startLexer(args[0]);
+            program();
         }
         catch( Throwable e )
         {
@@ -67,9 +84,14 @@ public class NanoMorphoParser
         generateProgram(args[0],code);
     }
 
-    static Object[] program() throws Exception
+    static void program() throws Exception
     {
-		...
+		System.out.println( "\""+name+".mexe\"=main in" );
+		System.out.println( " ! { { " ); 
+		for ( int i=0 ; i != p.length ; i++ ){
+			generateFunction(( Object[] )p[i] ); 
+		}
+		System.out.println ( " }}*BASIS ; " ) ;
     }
 
     static Object[] function() throws Exception
@@ -98,7 +120,7 @@ public class NanoMorphoParser
         else if( pri==2 )
         {
             Object[] e = binopexpr(3);
-            if( getNextToken()==OPNAME && priority(NanoMorphoLexer.getNextLexeme())==2 )
+            if( getNextToken()==OPNAME && priority(nanoMorphoLexer.getNextLexeme())==2 )
             {
                 String op = advance();
                 e = new Object[]{"CALL",op,new Object[]{e,binopexpr(2)}};
@@ -108,7 +130,7 @@ public class NanoMorphoParser
         else
         {
             Object[] e = binopexpr(pri+1);
-            while( getNextToken()==OPNAME && priority(NanoMorphoLexer.getNextLexeme())==pri )
+            while( getNextToken()==OPNAME && priority(nanoMorphoLexer.getNextLexeme())==pri )
             {
                 String op = advance();
                 e = new Object[]{"CALL",op,new Object[]{e,binopexpr(pri+1)}};
