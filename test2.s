@@ -1,15 +1,12 @@
-prufa eitt
-Github sibbi
-function(var a, var b){
-  var c = a;
+function (var a, b) {
+  var c;
   c = b + a;
-  == er OPNAME
   return c;
   if(c != b){
-
-  } else {
-	
-  elseif(!endir){
-	
+	a=b;
+  }   elseif(!endir){
+	c=d;
+  }  else {
+	a=b+c;
   }
 }

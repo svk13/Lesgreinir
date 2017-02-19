@@ -195,7 +195,7 @@ try {
  if(retCode == 0){
 	break;
  }
- System.out.println(retCode + " ...");
+ System.out.println(retCode + " "+ in.lexeme);
 myType(retCode);
 
  
@@ -227,52 +227,133 @@ public void isVAR(){
 
 public void isName(){
 	tok = getToken(in);
-	match(tok,40);
-	tok = getToken(in);
-	if(tok!=41){
-		match(tok,NAME);		
+	if(match(tok,40,true)){
 		tok = getToken(in);
-		while(tok==44){
-				tok = getToken(in);
-				match(tok,NAME);
-				tok = getToken(in);
-				
+		if(tok!=41){
+			match(tok,NAME);		
+			tok = getToken(in);
+			while(tok==44){
+					tok = getToken(in);
+					match(tok,NAME);
+					tok = getToken(in);
+					
+			}
 		}
+		match(tok,41);
+		tok = getToken(in);
+		match(tok,123);
+		tok = getToken(in);
+		return;
 	}
-	match(tok,41);
-	tok = getToken(in);
-	match(tok,123);
-	tok = getToken(in);
-	while(match(tok,VAR,true)){
+	/*while(match(tok,VAR,true)){
 		isVAR();
 		match(tok,59);
 		tok = getToken(in);
+	}*/
+	while(!match(tok,125,true)){
+		checkForExpr();
+		tok = getToken(in);
 	}
-	checkForExpr();
+	tok = getToken(in);
 	match(tok,125);
 }
 
 public void checkForExpr(){
-	if(match(tok,RETURN,true)){
+	if(match(tok,61,true)){
 		tok = getToken(in);
 		checkForExpr();
-	}
-	if(match(tok,NAME,true)){
+		
+	} else if(match(tok,RETURN,true)){
 		tok = getToken(in);
-		if(!in.lexeme.equals("=")){
-			if(match(tok,61,true)){
-				checkForBinExpr();
-			}
-		} else {
+		checkForExpr();
+	} else if(match(tok,NAME,true)){
+		tok = getToken(in);
+		//if(!in.lexeme.equals("=")){ //Lesgreinir túlkar "=" sem NAME
+		if(match(tok,61,true)){
 			tok = getToken(in);
 			checkForExpr();
+		
+			//}
+		} else {
+			checkForBinExpr(NAME);
 		}
+	} else {
+		checkForBinExpr(0);
 	}
-	checkForBinExpr();
+	match(tok,59,true); //Þessi lína er eitthvað að valda veseni án true (á að koma villa ef ekki ;, en heldur of snemma að það eigi að koma semikomma
 }
 
-public void checkForBinExpr(){
+public void checkForBinExpr(int source){
+	checkForSmallExpr(source);
+	tok = getToken(in);
+	while(match(tok,OPNAME,true)){
+		checkForSmallExpr(0);
+		tok = getToken(in);
+	}
+}
+
+public void checkForSmallExpr(int source){
+	if(source == NAME || match(tok, NAME, true)){
+		if(source != NAME){
+			tok = getToken(in);
+		}
+		if(!match(tok, 40, true)){ //líklegast semikomma, er athugað þegar komið er úr fallinu
+			return;
+		}
+		tok = getToken(in);
+		checkForExpr();
+		tok = getToken(in);
+		while(tok==44){
+			checkForExpr();
+			tok = getToken(in);
+		}
+		match(tok,41);
+	} else if(match(tok,OPNAME,true)){
+		tok = getToken(in);
+		checkForSmallExpr(0);
+	} else if(match(tok,LITERAL,true)){
+		return;
+	} else if(match(tok, 40, true)){
+		tok = getToken(in);
+		checkForExpr();
+		tok = getToken(in);
+		match(tok,41);
+	} else if(match(tok, IF, true)){
+		tok = getToken(in);
+		checkForExpr();
+		tok = getToken(in);
+		checkForBody();
+		tok = getToken(in);
+		match(tok,123);
+		tok = getToken(in);
+		while(match(tok,ELSEIF,true)){
+			tok = getToken(in);
+			checkForExpr();
+			tok = getToken(in);
+			checkForBody();
+			tok = getToken(in);
+		}
+		if(match(tok,ELSE,true)){
+			checkForExpr();
+			tok = getToken(in);
+			checkForBody();
+			tok = getToken(in);
+		}
+	} else if(match(tok,WHILE,true)){
+		tok = getToken(in);
+		checkForExpr();
+		tok = getToken(in);
+		checkForBody();
+	}
 	return;	
+}
+
+public void checkForBody(){
+	match(tok,123);
+	tok = getToken(in);
+	checkForExpr();
+	tok = getToken(in);
+	match(tok,125);
 }
 
 public int getToken(NanoLexer li){
@@ -296,7 +377,7 @@ public boolean match(int input, int lookup, boolean optional) {
 		return input == lookup;
 	}
 	if(input != lookup){
-		throw new Error(input+" does not match "+lookup);
+		throw new Error(input+" does not match "+lookup+". The word is: "+in.lexeme);
 	}
 	return false;
 }

@@ -23,21 +23,23 @@ import java.io.*;
 %{
 
 // Tokens:
-final static int ERROR = -1;
-final static int OPNAME = 1001;
-final static int NAME = 1002;
-final static int LITERAL = 1003;
-final static int PROGRAM = 1004;
-final static int WHILE = 1005;
-final static int IF = 1006;
-final static int ELSE = 1007;
-final static int ELSEIF = 1008;
-final static int RETURN = 1009;
-final static int VAR = 1010;
-
+public final static int ERROR = -1;
+public final static int OPNAME = 1001;
+public final static int NAME = 1002;
+public final static int LITERAL = 1003;
+public final static int FUNCTION = 1004;
+public final static int WHILE = 1005;
+public final static int IF = 1006;
+public final static int ELSE = 1007;
+public final static int ELSEIF = 1008;
+public final static int RETURN = 1009;
+public final static int VAR = 1010;
 
 // Breyta sem mun innihalda les (lexeme):
 public static String lexeme;
+
+
+
 
 // Þetta keyrir lexgreininn:
 public static void main( String[] args ) throws Exception
@@ -102,14 +104,14 @@ _FUNCTION={_NAME}{_DELIM}({_NAME}(,{_NAME})?)?{_DELIM}{_BODY}
 	return ELSE;
 }
 
-"elseif" {
+"elsif" {
 	lexeme = yytext();
 	return ELSEIF;
 }
 
 "function" {
 	lexeme = yytext();
-	return PROGRAM;
+	return FUNCTION;
 }
 
 "return" {
