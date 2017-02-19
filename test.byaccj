@@ -258,8 +258,9 @@ public void checkForExpr(){
 				checkForBinExpr(tok);
 			}
 			//if(!in.lexeme.equals("=")){ //Lesgreinir túlkar "=" sem NAME
-	match(tok,59,true); //Þessi lína er eitthvað að valda veseni án true (á að koma villa ef ekki ;, en heldur of snemma að það eigi að koma semikomma
+	//Þessi lína er eitthvað að valda veseni án true (á að koma villa ef ekki ;, en heldur of snemma að það eigi að koma semikomma
 	}
+	match(tok,59,true); 
 		
 }
 
@@ -273,59 +274,66 @@ public void checkForBinExpr(int source){
 }
 
 public void checkForSmallExpr(int source){
-	if(source == NAME || match(tok, NAME, true)){
-		if(source != NAME){
+
+	switch(tok){
+		case NAME:
 			tok = getToken(in);
-		}
-		if(!match(tok, 40, true)){ //líklegast semikomma, er athugað þegar komið er úr fallinu
-			return;
-		}
-		tok = getToken(in);
-		checkForExpr();
-		tok = getToken(in);
-		while(tok==44){
+			if(tok==40){
+				tok = getToken(in);
+				checkForExpr();
+				tok = getToken(in);
+				while(tok==44){
+					checkForExpr();
+					tok = getToken(in);
+				}
+				match(tok,41);
+			}else{
+				break;
+			}
+		case OPNAME:
+			tok = getToken(in);
+			checkForSmallExpr(tok);
+			break;
+		case LITERAL:
+			break;
+		case 40:
+			tok = getToken(in);
 			checkForExpr();
 			tok = getToken(in);
-		}
-		match(tok,41);
-	} else if(match(tok,OPNAME,true)){
-		tok = getToken(in);
-		checkForSmallExpr(0);
-	} else if(match(tok,LITERAL,true)){
-		return;
-	} else if(match(tok, 40, true)){
-		tok = getToken(in);
-		checkForExpr();
-		tok = getToken(in);
-		match(tok,41);
-	} else if(match(tok, IF, true)){
-		tok = getToken(in);
-		checkForExpr();
-		tok = getToken(in);
-		checkForBody();
-		tok = getToken(in);
-		match(tok,123);
-		tok = getToken(in);
-		while(match(tok,ELSEIF,true)){
+			match(tok,41);
+			break;
+		case IF:
 			tok = getToken(in);
 			checkForExpr();
 			tok = getToken(in);
 			checkForBody();
 			tok = getToken(in);
-		}
-		if(match(tok,ELSE,true)){
+			match(tok,123);
+			tok = getToken(in);
+			while(match(tok,ELSEIF,true)){
+				tok = getToken(in);
+				checkForExpr();
+				tok = getToken(in);
+				checkForBody();
+				tok = getToken(in);
+			}
+			if(match(tok,ELSE,true)){
+				checkForExpr();
+				tok = getToken(in);
+				checkForBody();
+				tok = getToken(in);
+			}
+			break;
+		case WHILE:
+			tok = getToken(in);
 			checkForExpr();
 			tok = getToken(in);
 			checkForBody();
-			tok = getToken(in);
-		}
-	} else if(match(tok,WHILE,true)){
-		tok = getToken(in);
-		checkForExpr();
-		tok = getToken(in);
-		checkForBody();
-	}
-	return;	
+			break;
+	}	
+	tok = getToken(in);
+	match(tok,59,true);	
+	
 }
 
 public void checkForBody(){
