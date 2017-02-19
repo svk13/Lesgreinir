@@ -146,30 +146,7 @@ public void myType(int num){
 				break;
 			default: throw new Error(token);
 		}
-	/*if( num == -1){
-		return "ERROR";
-	}
-	else if( num == 1001){
-		return "IF";
-	}else if( num == 1002){
-		return "VAR";
-	}else if( num == 1003){
-		return "NAME";
-	}else if( num == 1004){
-		return "LITERAL";
-	}else if( num == 1005){
-		return "OPNAME";
-	}else if( num == 1007){
-		return "LOOP";
-	}else if( num == 1008){
-		return "RETURN";
-	}else if( num == 1009){
-		return "ELSEIF";
-	}else if( num == 1010){
-		return "ELSE";
-	}else{
-		return "bull";
-	}*/
+	
 }
 
 public NanoLexer getLexer( Reader r ) throws FileNotFoundException
@@ -259,28 +236,31 @@ public void isName(){
 }
 
 public void checkForExpr(){
-	if(match(tok,61,true)){
-		tok = getToken(in);
-		checkForExpr();
-		
-	} else if(match(tok,RETURN,true)){
-		tok = getToken(in);
-		checkForExpr();
-	} else if(match(tok,NAME,true)){
-		tok = getToken(in);
-		//if(!in.lexeme.equals("=")){ //Lesgreinir túlkar "=" sem NAME
-		if(match(tok,61,true)){
+	switch(tok){
+		case 61:
 			tok = getToken(in);
 			checkForExpr();
+			break;
 		
-			//}
-		} else {
-			checkForBinExpr(NAME);
-		}
-	} else {
-		checkForBinExpr(0);
-	}
+		case RETURN:
+			tok = getToken(in);
+			checkForExpr();
+			break;
+		
+		case NAME: 
+			tok = getToken(in);
+			if(match(tok,61,true)){
+				tok = getToken(in);
+				checkForExpr();
+				break;
+			}
+			else {
+				checkForBinExpr(tok);
+			}
+			//if(!in.lexeme.equals("=")){ //Lesgreinir túlkar "=" sem NAME
 	match(tok,59,true); //Þessi lína er eitthvað að valda veseni án true (á að koma villa ef ekki ;, en heldur of snemma að það eigi að koma semikomma
+	}
+		
 }
 
 public void checkForBinExpr(int source){
