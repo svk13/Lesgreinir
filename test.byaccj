@@ -224,38 +224,35 @@ public void function(){
 	tok=getToken(in);
 	match(tok,123);
 	tok=getToken(in);
-	checkForDecl();
-	
+    while(tok == VAR) { //Margar línur af var
+        checkForDecl();
+        match(tok, 59); // ;
+        tok = getToken(in);
+    }
 	
 	//expr
     while(tok != 125){
         checkForExpr();
+        //match(tok, 59);
 		tok=getToken(in);
     }
-	
+	match(tok,125);
 }
 
 public void checkForDecl(){
-	while(tok == VAR){
-            tok=getToken(in);
-            match(tok,NAME);
-			tok=getToken(in);
-            while(tok != 59){
-                match(tok,44);
-				tok=getToken(in);
-				match(tok,NAME);
-				tok=getToken(in);
-            }
-            match(tok,59); // ;
-			tok=getToken(in);
-        }
+    tok=getToken(in);
+    match(tok,NAME);
+    tok=getToken(in);
+    if(tok == 44){
+        checkForDecl();
+    }
 }
 
 public void checkForExpr(){
 	switch(tok){
 		case 61:
-			tok = getToken(in);
-			checkForExpr();
+            tok = getToken(in);
+            checkForExpr();
 			break;
 		
 		case RETURN:
@@ -265,7 +262,8 @@ public void checkForExpr(){
 		
 		case NAME: 
 			tok = getToken(in);
-            if(tok==40){
+            //Öll þessi check ættu að vera í binopexpr eða smallexpr
+            /*if(tok==40){
                 tok = getToken(in);
                 checkForExpr();
                 //tok = getToken(in);
@@ -283,8 +281,9 @@ public void checkForExpr(){
             } else {
 				checkForBinExpr(tok);
 				break;
-			}
-	
+			}*/
+            checkForExpr();
+            break;
 		default:
 			checkForBinExpr(tok);
 			break;
@@ -308,15 +307,14 @@ public void checkForSmallExpr(int source){
 			if(tok==40){
 				tok = getToken(in);
 				checkForExpr();
-				tok = getToken(in);
+				//tok = getToken(in);
 				while(tok==44){
 					checkForExpr();
 					tok = getToken(in);
 				}
 				match(tok,41);
-			}else{
-				break;
 			}
+            break;
 		case OPNAME:
 			tok = getToken(in);
 			checkForSmallExpr(tok);
@@ -324,16 +322,18 @@ public void checkForSmallExpr(int source){
 		case LITERAL:
 			tok = getToken(in);
 			break;
-		case 40:
+		case 40: //name(name,name) fer hingað
 			tok = getToken(in);
-			checkForExpr();
-			//tok = getToken(in);
+            checkForExpr();
+            while(tok==44) {
+                tok = getToken(in);
+                checkForExpr();
+            }
 			match(tok,41);
 			break;
 		case IF:
 			tok = getToken(in);
 			match(tok,40);// (
-			
 			tok = getToken(in);
 			checkForExpr();
 			match(tok,41);
@@ -352,8 +352,6 @@ public void checkForSmallExpr(int source){
 				checkForExpr();
 				tok = getToken(in);
 				checkForBody();
-			
-				
 				//tok = getToken(in);
 			}
 			break;
@@ -365,6 +363,8 @@ public void checkForSmallExpr(int source){
 			tok = getToken(in);
 			checkForBody();
 			break;
+        //default:
+            //System.out.println("I shouldn't get here");
     }
 
 }
