@@ -40,7 +40,7 @@ public final static int ERROR = -1;
 public final static int OPNAME = 1001;
 public final static int NAME = 1002;
 public final static int LITERAL = 1003;
-public final static int PROGRAM = 1004;
+public final static int FUNCTION = 1004;
 public final static int WHILE = 1005;
 public final static int IF = 1006;
 public final static int ELSE = 1007;
@@ -53,7 +53,7 @@ public static int tok;
 
 void yyerror(String s)
 {
- System.out.println("par:"+s);
+ //System.out.println("par:"+s);
 }
 
 
@@ -73,7 +73,7 @@ Double d;
  else
  return 0;
  s = st.nextToken();
- //System.out.println("tok:"+s);
+ ////System.out.println("tok:"+s);
  try
  {
  d = Double.valueOf(s);/*this may fail*/
@@ -88,62 +88,62 @@ Double d;
 }
 
 String token;
-public void myType(int num){
+public String myType(int num){
 			switch(num)
 		{	
-			case PROGRAM:  
-				token = "PROGRAM";
-				break;
+			case FUNCTION:  
+				token = "FUNCTION";
+				return token;
 			case LITERAL:  
 				token = "LITERAL";
-				break;
+				return token;
 			case NAME:  
 				token = "NAME";
-				isName();
-				break;
+			//	isName();
+				return token;
 			case VAR:
 				token = "VAR";
-				isVAR();
-				break;
+			//	isVAR();
+				return token;
 			case 40:
 				token = "(";
-				break;
+				return token;
 			case 41:
 				token = ")";
-				break;
+				return token;
 			case 123: 
 				token = "{";
-				break;
+				return token;
 			case 125:
 				token = "}";
-				break;
+				return token;
 			case 59:
 				token = ";";
-				break;
+				return token;
 			case 44:
 				token = ",";
-				break;
+				return token;
 			case OPNAME:
 				token = "OPNAME";
-				break;
+				return token;
 			case ERROR:
 				token = "ERROR";
-				break;
+				return token;
 			case WHILE:
 				token = "WHILE";
-				break;
+				return token;
 			case IF:
 				token = "IF";
-				break;
+				return token;
 			case ELSE:
 				token = "ELSE";
-				break;
+				return token;
 			case ELSEIF:
 				token = "ELSEIF";
-				break;
+				return token;
 			case RETURN:
 				token = "RETURN";
-				break;
+				return token;
 			default: throw new Error(token);
 		}
 	
@@ -160,20 +160,19 @@ void dotest(String args[])
 try {
  in = getLexer(new FileReader(args[0]));
 	}catch (Exception e){
-		System.out.println("Villa í getLexer(): "+e);
+		//System.out.println("Villa í getLexer(): "+e);
 	}
  int retCode=1;
- System.out.println("BYACC/J Parser fyrir Þýðendur");
- while (true)
- {
+ //System.out.println("BYACC/J Parser fyrir Þýðendur");
+
  try
  {
  retCode = in.yylex();
- if(retCode == 0){
-	break;
- }
- System.out.println(retCode + " "+ in.lexeme);
-myType(retCode);
+ match(retCode,FUNCTION);
+ //System.out.println("tok er: " + tok);
+ tok=-1;
+ program();
+//myType(retCode);
 
  
  }
@@ -181,58 +180,75 @@ myType(retCode);
  {
 	System.out.println("Villa í að lesa skrá"+e);
  }
+
  //st = new StringTokenizer(ins);
  newline=false;
  //yyparse();
- }
+
 }
-public void isVAR(){
-	NanoLexer tmp = in;
-	tok = getToken(tmp);
-	match(tok,NAME);
-	
-	tok = getToken(tmp);
-	
-	while(tok==44){
-			tok = getToken(tmp);
-			match(tok,NAME);
-			tok = getToken(tmp);
-			
+
+public void program(){
+	while(tok!=0){
+		function();
+		tok = getToken(in);
 	}
+	System.out.println("PROGRAM ER BUID :) :) ");
 	
 }
 
-public void isName(){
+
+public void function(){
+	
+	//nafnið:
 	tok = getToken(in);
-	if(match(tok,40,true)){
+	match(tok,NAME);
+	//svigi
+	tok = getToken(in);
+	match(tok,40);
+
+	tok = getToken(in);
+	
+	if(tok!=41){
+		//Ef ekki svigi þá NAME
+		match(tok,NAME);
 		tok = getToken(in);
-		if(tok!=41){
-			match(tok,NAME);		
-			tok = getToken(in);
-			while(tok==44){
-					tok = getToken(in);
-					match(tok,NAME);
-					tok = getToken(in);
-					
-			}
+		while(tok!=41){
+			match(tok,44);
+			tok=getToken(in);
+			match(tok,NAME);
+			tok=getToken(in);
 		}
-		match(tok,41);
-		tok = getToken(in);
-		match(tok,123);
-		tok = getToken(in);
-		return;
 	}
-	/*while(match(tok,VAR,true)){
-		isVAR();
-		match(tok,59);
-		tok = getToken(in);
-	}*/
-	while(!match(tok,125,true)){
-		checkForExpr();
-		tok = getToken(in);
-	}
-	tok = getToken(in);
-	match(tok,125);
+	match(tok,41);
+	//'{', { decl, ';' }, { expr, ';' }, '}'
+	tok=getToken(in);
+	match(tok,123);
+	tok=getToken(in);
+	checkForDecl();
+	
+	
+	//expr
+    while(tok != 125){
+        checkForExpr();
+		tok=getToken(in);
+    }
+	
+}
+
+public void checkForDecl(){
+	while(tok == VAR){
+            tok=getToken(in);
+            match(tok,NAME);
+			tok=getToken(in);
+            while(tok != 59){
+                match(tok,44);
+				tok=getToken(in);
+				match(tok,NAME);
+				tok=getToken(in);
+            }
+            match(tok,59); // ;
+			tok=getToken(in);
+        }
 }
 
 public void checkForExpr(){
@@ -249,6 +265,9 @@ public void checkForExpr(){
 		
 		case NAME: 
 			tok = getToken(in);
+			if(tok==41){
+				break;
+			}
 			if(match(tok,61,true)){
 				tok = getToken(in);
 				checkForExpr();
@@ -256,25 +275,26 @@ public void checkForExpr(){
 			}
 			else {
 				checkForBinExpr(tok);
+				break;
 			}
-			//if(!in.lexeme.equals("=")){ //Lesgreinir túlkar "=" sem NAME
-	//Þessi lína er eitthvað að valda veseni án true (á að koma villa ef ekki ;, en heldur of snemma að það eigi að koma semikomma
+	
+		default:
+			checkForBinExpr(tok);
+			break;
+			
 	}
-	match(tok,59,true); 
-		
 }
 
 public void checkForBinExpr(int source){
-	checkForSmallExpr(source);
-	tok = getToken(in);
-	while(match(tok,OPNAME,true)){
-		checkForSmallExpr(0);
-		tok = getToken(in);
+	checkForSmallExpr(tok);
+	//tok = getToken(in);
+	while(tok==OPNAME){
+		checkForSmallExpr(tok);
+		//tok = getToken(in);
 	}
 }
 
 public void checkForSmallExpr(int source){
-
 	switch(tok){
 		case NAME:
 			tok = getToken(in);
@@ -295,22 +315,26 @@ public void checkForSmallExpr(int source){
 			checkForSmallExpr(tok);
 			break;
 		case LITERAL:
+			tok = getToken(in);
 			break;
 		case 40:
 			tok = getToken(in);
 			checkForExpr();
-			tok = getToken(in);
+			//tok = getToken(in);
 			match(tok,41);
 			break;
 		case IF:
 			tok = getToken(in);
+			match(tok,40);// (
+			
+			tok = getToken(in);
 			checkForExpr();
+			match(tok,41);
 			tok = getToken(in);
 			checkForBody();
 			tok = getToken(in);
-			match(tok,123);
-			tok = getToken(in);
 			while(match(tok,ELSEIF,true)){
+				tok = getToken(in);
 				tok = getToken(in);
 				checkForExpr();
 				tok = getToken(in);
@@ -321,40 +345,75 @@ public void checkForSmallExpr(int source){
 				checkForExpr();
 				tok = getToken(in);
 				checkForBody();
-				tok = getToken(in);
+			
+				
+				//tok = getToken(in);
 			}
 			break;
 		case WHILE:
 			tok = getToken(in);
+			match(tok,40);
+			tok=getToken(in);
 			checkForExpr();
 			tok = getToken(in);
 			checkForBody();
 			break;
 	}	
-	tok = getToken(in);
-	match(tok,59,true);	
-	
+
 }
 
 public void checkForBody(){
 	match(tok,123);
 	tok = getToken(in);
-	checkForExpr();
-	tok = getToken(in);
+	while(tok!=125){
+		checkForExpr();
+		if(tok == 40 || tok == 41){
+			tok = getToken(in);
+		}
+		match(tok,59);
+		tok = getToken(in);
+	}
+	
 	match(tok,125);
+	//getAndMatch(125);
+}
+public void getAndMatch(int tokenz){
+	//System.out.println("getAndMatch");
+	tok = getToken(in);
+	match(tok,tokenz);
 }
 
 public int getToken(NanoLexer li){
 	try{
 		int tmp = li.yylex();
-		System.out.println(tmp+": "+li.lexeme);
-		
+		if(tmp == 0){
+			System.out.println("END OF FILE");
+		}else{
+			System.out.println(tmp+": "+li.lexeme);	
+		}
+
+
 		return tmp;
 	}catch (Exception e ){
 		System.out.println("gat ekki lesið " + e  );
 		return -1;
 	}
 }
+
+public void over(int matchme) throws Exception {
+        if(tok==matchme){
+
+            if(tok==0) {
+                return;
+            }else{
+                tok = getToken(in);
+            }
+        }
+        else{
+            throw new Error("Unexpected token. Expected '"+matchme+"' but got '"+tok+"'.");
+        }
+
+    }
 
 public void match(int input, int lookup) {
 	Boolean tmp = match(input, lookup, false);
