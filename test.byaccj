@@ -265,15 +265,22 @@ public void checkForExpr(){
 		
 		case NAME: 
 			tok = getToken(in);
-			if(tok==41){
+            if(tok==40){
+                tok = getToken(in);
+                checkForExpr();
+                //tok = getToken(in);
+                match(tok, 41);
+            } else if(tok==41){
 				break;
-			}
-			if(match(tok,61,true)){
+			} else if(match(tok,61,true)){
 				tok = getToken(in);
 				checkForExpr();
 				break;
-			}
-			else {
+			}	else if(tok==44){
+                tok = getToken(in);
+                checkForExpr();
+                break;
+            } else {
 				checkForBinExpr(tok);
 				break;
 			}
@@ -351,14 +358,14 @@ public void checkForSmallExpr(int source){
 			}
 			break;
 		case WHILE:
-			tok = getToken(in);
+            tok = getToken(in);
 			match(tok,40);
 			tok=getToken(in);
 			checkForExpr();
 			tok = getToken(in);
 			checkForBody();
 			break;
-	}	
+    }
 
 }
 
