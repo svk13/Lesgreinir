@@ -4,8 +4,8 @@ import java.io.*;
 
 /**
 	Parser fyrir NanoMorpho.
-	Höfundur: Yngvi Birgir Bergþórsson, febrúar 2017
-		Sigurbjörn Viðar Karlsson, febrúar 2017
+	Höfundur:   Yngvi Birgir Bergþórsson, febrúar 2017
+				Sigurbjörn Viðar Karlsson, febrúar 2017
 */
 
 public class NanoMorphoParser {
@@ -32,12 +32,18 @@ public class NanoMorphoParser {
       return lexer.over(tok);
   }
   */
+  
+
+  /** 
+   * Compares the current lexeme in the lexer to the input string.
+   * Throws error if String does not match.
+   * Other wise, it reads the next token.
+   *
+   * @param tok		String to be compared to
+   * @return         the unpacked character translation table
+   */
  static void over(String tok) throws Exception {
   lexer.over(tok);
- }
-
- static void getNextToken(int num) {
-  lexer.peek(num);
  }
 
  private static int varCount;
@@ -59,7 +65,6 @@ public class NanoMorphoParser {
  	} 
  */
  static public void main(String[] args) throws Exception {
-  //Óþarfi þar til þulusmiður kemur til sögunnar
   //Object[] code = null;
   fileReader = new FileReader(args[0]);
   lexer = new NanoLexer(fileReader);
@@ -75,7 +80,9 @@ public class NanoMorphoParser {
   }
   //     generateProgram(args[0],code);
  }
-
+ 
+ //program		=	{ function }
+ // 			;
  static void program() throws Exception {
   while (!lexer.eof()) {
 	function();
@@ -83,20 +90,19 @@ public class NanoMorphoParser {
   System.out.println("END OF FILE");
  }
 
-
+/**
+	function	= 	NAME, '(', [ NAME, { ',', NAME } ] ')'
+				'{', { decl, ';' }, { expr, ';' }, '}'
+				;
+**/
  static void
  function() throws Exception {
-  //varCount = 0;
-  //varTable = new HashMap<String,Integer>();
 
-  //nafnið:
   advance();
   over("NAME");
-  //svigi
   over("(");
 
   if (lexer.strToken != ")") {
-   //Ef ekki svigi þá NAME
    over("NAME");
    while (lexer.strToken != ")") {
     over(",");
@@ -117,6 +123,7 @@ public class NanoMorphoParser {
   over("}");
  }
 
+ // decl		=	'var', NAME, { ',', NAME }
  static void decl() throws Exception {
   while (lexer.strToken == "VAR") {
    over("VAR");
@@ -129,6 +136,12 @@ public class NanoMorphoParser {
   }
  }
 
+ /**
+	expr		=	'return', expr
+			|	NAME, '=', expr
+			|	binopexpr
+				;
+ **/
  static void expr() throws Exception {
 
   if (lexer.strToken == "RETURN") {
@@ -146,16 +159,27 @@ public class NanoMorphoParser {
   }
  }
 
-
+/**
+binopexpr	=	smallexpr, { OPNAME, smallexpr }
+			;
+**/
  static void binopexpr() throws Exception {
   smallexpr();
-  //tok = getToken(in);
   while (lexer.strToken == "OPNAME") {
    smallexpr();
-   //tok = getToken(in);
   }
  }
 
+ /**
+	smallexpr	=	NAME
+			|	NAME, '(', [ expr, { ',', expr } ], ')'
+			|	OPNAME, smallexpr
+			| 	LITERAL 
+			|	'(', expr, ')'
+			|	'if', expr, body, { 'elsif', expr, body }, [ 'else', body ]
+			|	'while', expr, body
+			;
+ **/
  static void smallexpr() throws Exception {
   switch (lexer.token) {
    case NAME:
@@ -186,7 +210,6 @@ public class NanoMorphoParser {
    case 40: // (
     over("(");
     expr();
-    //tok = getToken(in);
     over(")");
     break;
    case IF:
@@ -220,6 +243,10 @@ public class NanoMorphoParser {
   }
  }
 
+ /**
+	body		=	'{', { expr, ';' }, '}'
+				;
+ **/
  static void body() throws Exception {
    over("{");
    expr();
