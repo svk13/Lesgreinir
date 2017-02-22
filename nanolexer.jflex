@@ -37,15 +37,78 @@ public final static int VAR = 1010;
 
 // Breyta sem mun innihalda les (lexeme):
 public static String lexeme;
+public static String strToken;
+public static int token;
 
-
-
+public String myType(int num){
+			switch(num)
+		{	
+			case FUNCTION:  
+				strToken = "FUNCTION";
+				return strToken;
+			case LITERAL:  
+				strToken = "LITERAL";
+				return strToken;
+			case NAME:  
+				strToken = "NAME";
+			//	isName();
+				return strToken;
+			case VAR:
+				strToken = "VAR";
+			//	isVAR();
+				return strToken;
+			case 40:
+				strToken = "(";
+				return strToken;
+			case 41:
+				strToken = ")";
+				return strToken;
+			case 123: 
+				strToken = "{";
+				return strToken;
+			case 125:
+				strToken = "}";
+				return strToken;
+			case 59:
+				strToken = ";";
+				return strToken;
+			case 44:
+				strToken = ",";
+				return strToken;
+			case 61:
+				strToken = "=";
+				return strToken;	
+			case OPNAME:
+				strToken = "OPNAME";
+				return strToken;
+			case ERROR:
+				strToken = "ERROR";
+				return strToken;
+			case WHILE:
+				strToken = "WHILE";
+				return strToken;
+			case IF:
+				strToken = "IF";
+				return strToken;
+			case ELSE:
+				strToken = "ELSE";
+				return strToken;
+			case ELSEIF:
+				strToken = "ELSEIF";
+				return strToken;
+			case RETURN:
+				strToken = "RETURN";
+				return strToken;
+			default: throw new Error("Unknown token: " + strToken);
+		}
+	
+}
 
 // Þetta keyrir lexgreininn:
 public static void main( String[] args ) throws Exception
 {
 	NanoLexer lexer = new NanoLexer(new FileReader(args[0]));
-	int token = lexer.yylex();
+	token = lexer.yylex();
 	while( token!=0 )
 	{
 		System.out.println(""+token+": \'"+lexeme+"\'");
@@ -53,6 +116,60 @@ public static void main( String[] args ) throws Exception
 	}
 }
 
+public char peek(int num){
+	char nextStr=' ';
+
+	while(nextStr == ' '){
+		nextStr= yycharat(this.lexeme.length()+num);
+		num++;
+	}
+	return nextStr;
+	
+}
+
+public void over(String tok){
+	if( strToken!=tok ) throw new Error("Expected "+tok+", found "+lexeme);
+			advance();
+	
+}
+
+public void advance(){
+	try{
+		int tmp = token;
+		String tmp2 = strToken;
+		String tmp3 = lexeme;
+		token = this.yylex();
+		if(eof()){
+			so("Last Token: " + tmp + " -> " + tmp2 +  " -> " + tmp3);
+			return;
+		}else{
+			so("Over: " + tmp + " -> " + tmp2 +  " -> " + tmp3);
+			strToken = myType(token);
+		}
+		
+		
+	}catch(Exception e){
+		System.out.println("Búið : " + e);
+	
+	}	
+}
+
+public void so(String out){
+	System.out.println(out);
+}
+
+// Notkun: char c = l.getToken();
+		// Eftir:  c er tókið (token) sem stendur fyrir
+		//         það mál sem næsta les í l flokkast í.
+		String getToken()
+		{
+			return this.lexeme;
+		}
+
+		public boolean eof(){
+			return this.zzEOFDone;
+		
+		}
 %}
 
   /* Reglulegar skilgreiningar */
@@ -104,7 +221,7 @@ _FUNCTION={_NAME}{_DELIM}({_NAME}(,{_NAME})?)?{_DELIM}{_BODY}
 	return ELSE;
 }
 
-"elsif" {
+"elseif" {
 	lexeme = yytext();
 	return ELSEIF;
 }
