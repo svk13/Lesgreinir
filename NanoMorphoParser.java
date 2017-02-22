@@ -65,19 +65,9 @@ public class NanoMorphoParser {
   lexer = new NanoLexer(fileReader);
   NanoMorphoParser yyparser = new NanoMorphoParser();
   try {
+	  
    advance();
-   System.out.println("" + lexer.token + ": \'" + lexer.lexeme + "\'");
-   /*while( !lexer.eof() )
-   {	
-   	String s = lexer.peek(1);
-   	System.out.println("peek  " + s);
-   	System.out.println(""+lexer.token+": \'"+lexer.lexeme+"\'");
-   	String s2 = lexer.peek(-1);
-   	System.out.println("peek  " + s2);
-   	
-   	//token = lexer.yylex();
-   	advance();
-   }*/
+ 
    program();
 
   } catch (Throwable e) {
@@ -88,13 +78,9 @@ public class NanoMorphoParser {
 
  static void program() throws Exception {
   while (!lexer.eof()) {
-   System.out.println(lexer.eof());
-
-   function();
-   //advance();
-
+	function();
   }
-  System.out.println("PROGRAM ER BUID :) :) ");
+  System.out.println("END OF FILE");
  }
 
 
@@ -159,14 +145,6 @@ public class NanoMorphoParser {
    return;
   }
  }
-
-
- // Athuga: nafn,  nafn=, nafn(
- // Breyta yfir í IF í stað case.
- // tok = getToken(in);
- //  ATHUGA hvort = sé næst.
- // 	-- ef svo er: labba yfir nafn, = og kalla á expr 
-
 
 
  static void binopexpr() throws Exception {

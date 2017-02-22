@@ -9,12 +9,13 @@ function ny (name, name2) {
 	};
 }
 
-function ny (name, name2) {
+function ny (name, name3, name2) {
 	var byssa;
 	karl = x+1;
 	
 	while( true ){
 		loop;
 	};
+	
 	return funs(   bla,sibbz);
 }

@@ -140,10 +140,10 @@ public void advance(){
 		String tmp3 = lexeme;
 		token = this.yylex();
 		if(eof()){
-			so("Last Token: " + tmp + " -> " + tmp2 +  " -> " + tmp3);
+			so("Last Token:\t\t" + tmp + "\t\t->\t\t" + tmp2 +  "\t\t->\t\t" + tmp3);
 			return;
 		}else{
-			so("Over: " + tmp + " -> " + tmp2 +  " -> " + tmp3);
+			so("Over:\t\t" + tmp + "\t\t->\t\t" + tmp2 +  "\t\t->\t\t" + tmp3);
 			strToken = myType(token);
 		}
 		
