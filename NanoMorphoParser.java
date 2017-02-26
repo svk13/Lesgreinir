@@ -42,10 +42,21 @@ public class NanoMorphoParser {
    * @param tok		String to be compared to
    * @return         the unpacked character translation table
    */
+ static void over(int tok) throws Exception {
+  lexer.over(tok);
+ }
  static void over(String tok) throws Exception {
   lexer.over(tok);
  }
-
+ static String getLexeme(){
+	 return lexer.getLexeme();
+ }
+ static int getToken(){
+	 return lexer.getToken();
+ }
+  static String getNextLexeme(){
+	 return lexer.getNextLexeme();
+ }
  private static int varCount;
  private static HashMap < String, Integer > varTable;
 
@@ -69,15 +80,12 @@ public class NanoMorphoParser {
   fileReader = new FileReader(args[0]);
   lexer = new NanoLexer(fileReader);
   NanoMorphoParser yyparser = new NanoMorphoParser();
-  try {
-	  
-   advance();
- 
-   program();
 
-  } catch (Throwable e) {
-   System.out.println(e.getMessage());
-  }
+   lexer.startLex();
+   System.out.println("Eftir init: " + getLexeme() + " " + getToken() );
+   program();
+	System.out.println("Program finished running");
+
   //     generateProgram(args[0],code);
  }
  
@@ -95,18 +103,17 @@ public class NanoMorphoParser {
 				'{', { decl, ';' }, { expr, ';' }, '}'
 				;
 **/
- static void
- function() throws Exception {
-
-  advance();
-  over("NAME");
+ static void function() throws Exception {
+	 System.out.println("function: " + getLexeme() + " " + getToken() );
+  over(FUNCTION);
+  over(NAME);
   over("(");
-
-  if (lexer.strToken != ")") {
-   over("NAME");
-   while (lexer.strToken != ")") {
+  System.out.println("komst");
+  if (!getLexeme().equals(")")) {
+   over(NAME);
+   while (!getLexeme().equals(")")) {
     over(",");
-    over("NAME");
+    over(NAME);
    }
   }
   over(")");
@@ -115,7 +122,7 @@ public class NanoMorphoParser {
   over("{");
   decl();
 
-  while (lexer.strToken != "}") {
+  while (!getLexeme().equals("}")) {
    expr();
    over(";");
   }
@@ -125,12 +132,12 @@ public class NanoMorphoParser {
 
  // decl		=	'var', NAME, { ',', NAME }
  static void decl() throws Exception {
-  while (lexer.strToken == "VAR") {
-   over("VAR");
-   over("NAME");
-   while (lexer.strToken != ";") {
+  while (getToken() == VAR) {
+   over(VAR);
+   over(NAME);
+   while (!getLexeme().equals(";")) {
     over(",");
-    over("NAME");
+    over(NAME);
    }
    over(";");
   }
@@ -144,12 +151,12 @@ public class NanoMorphoParser {
  **/
  static void expr() throws Exception {
 
-  if (lexer.strToken == "RETURN") {
-   over("RETURN");
+  if (getToken() == RETURN) {
+   over(RETURN);
    expr();
-   return;
-  } else if (lexer.peek(0) == '=') {
-   over("NAME");
+   return;  
+  } else if (getNextLexeme().equals("=")) {
+   over(NAME);
    over("=");
    expr();
    return;
@@ -165,7 +172,7 @@ binopexpr	=	smallexpr, { OPNAME, smallexpr }
 **/
  static void binopexpr() throws Exception {
   smallexpr();
-  while (lexer.strToken == "OPNAME") {
+  while (getToken() == OPNAME) {
    smallexpr();
   }
  }
@@ -181,15 +188,15 @@ binopexpr	=	smallexpr, { OPNAME, smallexpr }
 			;
  **/
  static void smallexpr() throws Exception {
-  switch (lexer.token) {
+  switch (getToken()) {
    case NAME:
     //over("NAME");
-    if (lexer.peek(0) == '(') {
-     over("NAME");
+    if (lexer.getNextLexeme().equals("(")) {
+     over(NAME);
      over("(");
-     if (lexer.strToken != ")") {
+     if (!lexer.getLexeme().equals(")")) {
       expr();
-      while (lexer.strToken != ")") {
+      while (!lexer.getLexeme().equals(")")) {
        over(",");
        expr();
       }
@@ -197,15 +204,16 @@ binopexpr	=	smallexpr, { OPNAME, smallexpr }
      over(")");
      return;
     } else {
-     over("NAME");
+		System.out.println("HER");
+     over(NAME);
      return;
     }
    case OPNAME:
-    over("OPNAME");
+    over(OPNAME);
     smallexpr();
     break;
    case LITERAL:
-    over("LITERAL");
+    over(LITERAL);
     break;
    case 40: // (
     over("(");
@@ -213,33 +221,33 @@ binopexpr	=	smallexpr, { OPNAME, smallexpr }
     over(")");
     break;
    case IF:
-    over("IF");
+    over(IF);
     over("(");
     expr();
     over(")");
     body();
-    while (lexer.strToken == "ELSEIF") {
-     over("ELSEIF");
+    while (getToken() == ELSEIF) {
+     over(ELSEIF);
      over("(");
      expr();
      over(")");
      body();
     }
-    if (lexer.strToken == "ELSE") {
-     over("ELSE");
+    if (getToken() == ELSE) {
+     over(ELSE);
      body();
     }
     break;
-
+	
    case WHILE:
-    over("WHILE");
+    over(WHILE);
     over("(");
     expr();
     over(")");
     body();
     break;
    default:
-    throw new Error("Unknown token: " + lexer.strToken);
+    throw new Error("Unknown token: " + getLexeme() + " " + getToken());
   }
  }
 
@@ -251,7 +259,7 @@ binopexpr	=	smallexpr, { OPNAME, smallexpr }
    over("{");
    expr();
    over(";");
-   while (lexer.strToken != "}") {
+   while (!getLexeme().equals("}")) {
     expr();
     over(";");
    }
