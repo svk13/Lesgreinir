@@ -155,17 +155,23 @@ public void startLex() throws Exception{
 	
 }
 
-public void over(String tok) throws Exception{
+public String over(String tok) throws Exception{
 	so("Over: "+ lexeme1 + " \t" + tok);
 	if( !this.lexeme1.equals(tok) ) throw new Error("Expected: "+tok+" Found: "+lexeme1+" At line: " + yyline+" Column: " + yycolumn);
-			this.advance();
+	String result = lexeme1;	
+	this.advance();
+	return result;
+	
 	
 }
 
-public void over(int tok) throws Exception{
+public String over(int tok) throws Exception{
 	so("Over: "+ lexeme1 + " \t" + tok);
 	if( this.token1!=tok ) throw new Error("Expected: "+tok+" Found: "+lexeme1+" At line: " + yyline+" Column: " + yycolumn);
 			this.advance();
+	String result = lexeme1;	
+	this.advance();
+	return result;
 	
 }
 

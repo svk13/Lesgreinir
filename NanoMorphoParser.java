@@ -54,13 +54,16 @@ public class NanoMorphoParser {
  static int getToken(){
 	 return lexer.getToken();
  }
+  static int getNextToken(){
+	 return lexer.getNextToken();
+ }
   static String getNextLexeme(){
 	 return lexer.getNextLexeme();
  }
  private static int varCount;
  private static HashMap < String, Integer > varTable;
 
- /*	private static void addVar( String name )
+ 	private static void addVar( String name )
  	{
  		if( varTable.get(name) != null )
  			throw new Error("Variable "+name+" already exists, near line "+lexer.getNextLine());
@@ -74,7 +77,6 @@ public class NanoMorphoParser {
  			throw new Error("Variable "+name+" does not exist, near line "+lexer.getNextLine());
  		return res;
  	} 
- */
  static public void main(String[] args) throws Exception {
   //Object[] code = null;
   fileReader = new FileReader(args[0]);
@@ -109,25 +111,25 @@ public class NanoMorphoParser {
   over(NAME);
   over("(");
   System.out.println("komst");
-  if (!getLexeme().equals(")")) {
+  if (getToken()!=')') {
    over(NAME);
-   while (!getLexeme().equals(")")) {
-    over(",");
+   while (getToken()!=')') {
+    over(',');
     over(NAME);
    }
   }
-  over(")");
+  over(')');
 
   //body
-  over("{");
+  over('{');
   decl();
 
-  while (!getLexeme().equals("}")) {
+  while (getToken()!='}') {
    expr();
-   over(";");
+   over(';');
   }
 
-  over("}");
+  over('}');
  }
 
  // decl		=	'var', NAME, { ',', NAME }
@@ -135,11 +137,11 @@ public class NanoMorphoParser {
   while (getToken() == VAR) {
    over(VAR);
    over(NAME);
-   while (!getLexeme().equals(";")) {
-    over(",");
+   while (getToken()!=';') {
+    over(',');
     over(NAME);
    }
-   over(";");
+   over(';');
   }
  }
 
@@ -155,9 +157,9 @@ public class NanoMorphoParser {
    over(RETURN);
    expr();
    return;  
-  } else if (getNextLexeme().equals("=")) {
+  } else if (getNextToken()=='=') {
    over(NAME);
-   over("=");
+   over('=');
    expr();
    return;
   } else {
@@ -190,23 +192,24 @@ binopexpr	=	smallexpr, { OPNAME, smallexpr }
  static void smallexpr() throws Exception {
   switch (getToken()) {
    case NAME:
-    //over("NAME");
-    if (lexer.getNextLexeme().equals("(")) {
-     over(NAME);
-     over("(");
-     if (!lexer.getLexeme().equals(")")) {
-      expr();
-      while (!lexer.getLexeme().equals(")")) {
-       over(",");
-       expr();
+    //over(NAME);
+    if (lexer.getNextToken() == '(' ) {
+     String name = over(NAME);
+     over('(');
+     if (!lexer.getToken()==')') {
+      Vector<Object> args = new Vector<Object>();
+	  args.add(expr());
+      while (lexer.getToken()!=')') {
+       over(',');
+	   
+       args.add(expr());
       }
      }
-     over(")");
-     return;
+     over(')');
+     return new Object[]{"CALL",name,args.toArray()};
     } else {
-		System.out.println("HER");
      over(NAME);
-     return;
+	 return new Object[]{"FETCH",findVar(name)};
     }
    case OPNAME:
     over(OPNAME);
@@ -216,21 +219,21 @@ binopexpr	=	smallexpr, { OPNAME, smallexpr }
     over(LITERAL);
     break;
    case 40: // (
-    over("(");
+    over('(');
     expr();
-    over(")");
+    over(')');
     break;
    case IF:
     over(IF);
-    over("(");
+    over('(');
     expr();
-    over(")");
+    over(')');
     body();
     while (getToken() == ELSEIF) {
      over(ELSEIF);
-     over("(");
+     over('(');
      expr();
-     over(")");
+     over(')');
      body();
     }
     if (getToken() == ELSE) {
@@ -241,9 +244,9 @@ binopexpr	=	smallexpr, { OPNAME, smallexpr }
 	
    case WHILE:
     over(WHILE);
-    over("(");
+    over('(');
     expr();
-    over(")");
+    over(')');
     body();
     break;
    default:
@@ -256,14 +259,14 @@ binopexpr	=	smallexpr, { OPNAME, smallexpr }
 				;
  **/
  static void body() throws Exception {
-   over("{");
+   over('{');
    expr();
-   over(";");
-   while (!getLexeme().equals("}")) {
+   over(';');
+   while (getToken()!='}') {
     expr();
-    over(";");
+    over(';');
    }
-    over("}");
+    over('}');
   }
   /*
       static void binopexpr( int pri ) throws Exception
