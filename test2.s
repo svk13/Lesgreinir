@@ -1,4 +1,4 @@
-function ny ( breyta1, name2) {
+function ny(breyta1,name2){
 	var byssa;
 	karl     = x;
 	

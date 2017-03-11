@@ -128,6 +128,12 @@ public static void main( String[] args ) throws Exception
 public void line(){
 	System.out.println("Line: "+yyline+": \t column: \'"+yycolumn+"\'");
 }
+
+public int getNextLine()
+{
+	return this.line1+1;
+}
+
 public int getToken(){
 	return this.token1;
 }
@@ -156,33 +162,51 @@ public void startLex() throws Exception{
 }
 
 public String over(String tok) throws Exception{
-	so("Over: "+ lexeme1 + " \t" + tok);
-	if( !this.lexeme1.equals(tok) ) throw new Error("Expected: "+tok+" Found: "+lexeme1+" At line: " + yyline+" Column: " + yycolumn);
-	String result = lexeme1;	
+    //Afhverju virkar lexeme1 ekki hér? Token og lexeme úr takt
+	so("Over: "+ lexeme2 + " \t" + tok);
+    so("Token1: "+token1);
+	if( !lexeme2.equals(tok) ) throw new Error("Expected: "+tok+" Found: "+lexeme2+" At line: " + yyline+" Column: " + yycolumn);
+
+    String result = lexeme2;
 	this.advance();
 	return result;
-	
-	
+
+
 }
 
 public String over(int tok) throws Exception{
 	so("Over: "+ lexeme1 + " \t" + tok);
-	if( this.token1!=tok ) throw new Error("Expected: "+tok+" Found: "+lexeme1+" At line: " + yyline+" Column: " + yycolumn);
-			this.advance();
-	String result = lexeme1;	
+    so("Token1: "+token1);
+	if( token1!=tok ) throw new Error("Expected: "+tok+" Found: "+token1+" At line: " + yyline+" Column: " + yycolumn);
+    //this.advance();
+	String result = lexeme1;
 	this.advance();
 	return result;
-	
+
 }
 
-public void advance() throws Exception{
-	token1 = token2;
+
+public String advance() throws Exception{
+	/*token1 = token2;
 	lexeme1 = lexeme2;
 	if(token1==0) return;
 	token2 = this.yylex();
-	lexeme2 = this.yytext();
+	lexeme2 = this.yytext();*/
 
-	//so("tkoen1: " + token1 + " Lexeme1 : " + lexeme1 + " Token2: " + token2 + " lexeme2  " + lexeme2);
+	String res = lexeme1;
+	token1 = token2;
+	lexeme1 = lexeme2;
+	line1 = line2;
+	column1 = column2;
+	if( token2==0 ) return res;
+    lexeme2 = this.yytext();
+	token2 = this.yylex();
+	line2 = this.yyline;
+	column2 = this.yycolumn;
+    //so("token1: " + token1 + " Lexeme1 : " + lexeme1 + " Token2: " + token2 + " lexeme2  " + lexeme2);
+	return res;
+
+
 }
 
 
